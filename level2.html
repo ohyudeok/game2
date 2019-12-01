@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>인내심이 얼마정도해?</title>
+	<style type="text/css">
+		body{margin:0; padding:0; background:black;}
+		h2{color:white; font-family: 'CookieRunOTF-Bold'; font-size:50px; margin-left:calc(50% - 142.5px); position:absolute; margin-top: 50px;}
+		p{color:white; font-family: 'CookieRunOTF-Bold'; font-size:25px; position:absolute; margin-top: 130px; margin-left:calc(50% - 168.5px);}
+		footer{color:white; margin-top:700px; position:absolute; margin-left:calc(50% - 129px);}
+		@keyframes opa{
+			to{opacity:0;}
+		}
+
+		@keyframes ro{
+			to{rotate:360deg;}
+		}
+
+		@font-face { font-family: 'CookieRunOTF-Bold'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/CookieRunOTF-Bold00.woff') format('woff'); font-weight: normal; font-style: normal; }
+
+		#output {
+		  width: 120px;
+		  height: 50px;
+		  background-color: black;
+		  margin-top:500px;
+		}
+	</style>
+</head>
+<body onbeforeunload="return myFunction()">
+	<h2>인내심 테스트</h2>
+	<p>2단계: 방해하는 새창들!</p>
+	<canvas id="myCanvas" width="1200" height="250" style="background:black; position: absolute; border:1px solid #384C5B; animation: ro 10s alternate infinite; margin-left:10%; margin-top: 200px;"></canvas>
+	
+	<p id="output"></p>
+
+	<script type="text/javascript">
+
+		alert("LEVEL 2! 여행을 떠나요~");
+
+		var playD = setInterval(playPause,8000);
+
+		function playPause(){
+			window.open("level22.html", "width:480px;height:480px;");
+		}
+
+		//창을 닫으시겠습니까?
+		function myFunction() {
+  		return "Write something clever here...";
+		}
+		//창을 닫겠냐?
+
+		var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+		var x = canvas.width/2;
+		var y = canvas.height-30;
+		var dx = 4; // 공이 2픽셀 움직인다는 것이냐?
+		var dy = -4;
+		var ballRadius = 10; //간단한 충돌방지: 공
+		var paddleHeight = 10;
+		var paddleWidth = 50; //패달의 너비>얠 크기 조절해버리면 진짜 사람 화나지.
+		var paddleX = (canvas.width-paddleWidth)/2;
+		var rightPressed = false;
+		var leftPressed = false;
+		var brickRowCount = 1; //벽돌 배열행 = r
+		var brickColumnCount = 13; //벽돌 열의 수 = c
+		var brickWidth = 75; // 벽돌 가로길이
+		var brickHeight = 20; //벽돌 세로길이
+		var brickPadding = 15; // 벽돌 간격
+		var brickOffsetTop = 30; // 벽돌이 캔버스의 모서리에 닿지 않게 할 오프셋 변수
+		var brickOffsetLeft = 30; // 벽돌이 캔버스의 모서리에 닿지 않게 할 오프셋 변수
+		var bricks = [];
+		for(var c=0; c<brickColumnCount; c++) {
+		    bricks[c] = [];
+		    for(var r=0; r<brickRowCount; r++) {
+		        bricks[c][r] = { x: 0, y: 0, status:1 };
+		    }
+		}
+		var score = 0; // 점수!!
+		var lives = 3; // 생명까지 주겠데...뭐하러?.. 다음 단계 넘어가는건 어케해염....?
+
+		document.addEventListener("keydown", keyDownHandler, false);
+		document.addEventListener("keyup", keyUpHandler, false);
+		document.addEventListener("mousemove", mouseMoveHandler, false);
+			
+			function keyDownHandler(e) {
+		    if(e.keyCode == 39) {
+		        rightPressed = true;
+		    }
+		    else if(e.keyCode == 37) {
+		        leftPressed = true;
+			    }
+			}
+			function keyUpHandler(e) {
+			    if(e.keyCode == 39) {
+			        rightPressed = false;
+			    }
+			    else if(e.keyCode == 37) {
+			        leftPressed = false;
+			    }
+			}
+
+			function mouseMoveHandler(e) {
+			    var relativeX = e.clientX - canvas.offsetLeft;
+			    if(relativeX > 0 && relativeX < canvas.width) {
+			        paddleX = relativeX - paddleWidth/2;
+			    }
+			}
+
+			function collisionDetection() {
+			    for(var c=0; c<brickColumnCount; c++) {
+			        for(var r=0; r<brickRowCount; r++) {
+			            var b = bricks[c][r];
+			            if(b.status == 1){
+				            if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+				                dy = -dy;
+				                b.status = 0;
+				                score++;
+				                if(score == brickRowCount*brickColumnCount){
+				                	alert("YOU WIN, CONGRATUATS! GO, LEVEL 3!");
+				                	document.location.href = "level0111.html";
+				                }
+				            }
+			            }
+			        }
+			    }
+			}
+
+			function drawBall(){
+			ctx.beginPath();
+			ctx.arc(x, y, 10, 0, Math.PI*2);
+			ctx.fillStyle = "white";
+			ctx.fill();
+			ctx.closePath();
+			}
+
+			function drawPaddle() {
+		    ctx.beginPath();
+		    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+		    ctx.fillStyle = "white";
+		    ctx.fill();
+		    ctx.closePath();
+			}
+
+			function drawBricks() {
+			    for(var c=0; c<brickColumnCount; c++) {
+			        for(var r=0; r<brickRowCount; r++) {
+			        	if(bricks[c][r].status == 1){
+				            var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+				            var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+				            bricks[c][r].x = brickX;
+				            bricks[c][r].y = brickY;
+				            ctx.beginPath();
+				            ctx.rect(brickX, brickY, brickWidth, brickHeight);
+				            ctx.fillStyle = "white";
+				            ctx.fill();
+				            ctx.closePath();
+					        }
+				        }
+				    }
+			    }
+			    
+
+			function drawScore() {
+			    ctx.font = "16px Arial";
+			    ctx.fillStyle = "white";
+			    ctx.fillText("Score: "+score, 8, 20); // 마지막 두개는 좌표래....
+			}
+
+			function drawLives() {
+			    ctx.font = "16px Arial";
+			    ctx.fillStyle = "white";
+			    ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+			} // 이건 생명!
+			
+
+			function draw(){
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawBricks();
+			drawBall();
+			drawPaddle();
+			drawScore();
+			drawLives();
+			collisionDetection();
+
+			//if(x + dx > canvas.width || x + dx < 0) {
+    			//dx = -dx;
+				//}
+
+			//if(y + dy > canvas.height || y + dy < 0) {
+    		//dy = -dy;
+			//} <-얘네는 공이 캔버스 밖으로도 나다니게 만들어 버린다.
+
+			if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+	        dx = -dx;
+		    }
+
+		    if(y + dy < ballRadius) {
+		        dy = -dy;
+		    } else if(y + dy > canvas.height-ballRadius) {
+		    	if(x > paddleX && x < paddleX + paddleWidth) {
+		    		dy = -dy;
+		    	} 
+		    else {
+		    	lives--;
+		    	if(!lives) {
+		    	alert("GAME OVER! 음, 좀 어렵지?");
+		    	document.location.reload();
+		    	}
+		    	else{
+		    		x = canvas.width/2;
+		    		y = canvas.height-30;
+		    		dx = 4; // 여기도 같이 바꿔줘야 죽고 나서도 속도가 같다.
+		    		dy = -4; // 여기도 같이 바꿔줘야 죽고 나서도 속도가 같다: 공
+		    		paddleX = (canvas.width-paddleWidth)/2;
+		    	}
+		    	}
+			}
+
+		    if(rightPressed && paddleX < canvas.width-paddleWidth) {
+       			 paddleX += 7;
+		    }
+		    else if(leftPressed && paddleX > 0) {
+		        paddleX -= 7;
+		    } // 패달이 7픽셀 움직인다. + (rightPressed or leftPressed)하면 밖으로도 나다닌다. 움직임을 더 휙휙할 수 있겠다.
+
+			x += dx;
+    		y += dy;
+    		requestAnimationFrame(draw);
+			}
+			
+			draw();
+
+			//여기서부터 초재기시작임
+		    var time = 0;
+		    var running = 0;
+
+		    var timeD = setInterval(startPause,100);
+
+		    function startPause(){
+		     if(running == 0){
+		     running = 1;
+		     increment();
+		     document.getElementById("startPause").innerHTML = "Pause";
+		     }else {
+		     running = 0;
+		     document.getElementById("startPause").innerHTML = "Resume";
+		     }
+		     
+		    }
+
+
+		    function reset(){
+		     running = 0;
+		     time = 0;
+		     document.getElementById("startPause").innerHTML = "Start"; 
+		     document.getElementById("output").innerHTML = "00:00:00";
+		    }
+
+
+		    function increment(){
+		     if(running == 1){
+		     setTimeout(function(){
+		     time++;
+		     var mins = Math.floor(time/10/60);
+		     var secs = Math.floor(time/10);
+		     var tenths = time % 10;
+		     
+		     if(mins < 10){
+		     mins = "0" + mins;
+		     }
+		     if(secs < 10){
+		     secs = "0" + secs;
+		     }
+		     
+		     document.getElementById('output').innerHTML = mins + ":" + secs + ":" + "0" + tenths;
+		     increment();
+		     
+		     }, 100);
+		     }
+		    }
+		    //여기까지 초재는 거임
+
+	</script>
+	<footer> @20191125 designed by ohyudeok</footer>
+
+</body>
+</html>
